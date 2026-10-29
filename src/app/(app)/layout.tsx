@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
-import { LogOut } from 'lucide-react'
+import Link from 'next/link'
+import { KeyRound, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import Nav, { type NavLink } from './nav'
 
@@ -24,22 +25,22 @@ function Brand() {
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const { data: claims } = await supabase.auth.getClaims()
+  const userId = claims?.claims?.sub
+  if (!userId) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles').select('full_name, role, is_active').eq('id', user.id).single()
+  const [profileRes, unread, pending] = await Promise.all([
+    supabase.from('profiles').select('full_name, role, is_active').eq('id', userId).single(),
+    supabase.from('notifications').select('id', { count: 'exact', head: true }).is('read_at', null),
+    supabase.from('sales').select('id', { count: 'exact', head: true }).eq('approval_status', 'pending'),
+  ])
+  const profile = profileRes.data
 
   // Signed in to Supabase but not an active staff member: no access.
   if (!profile || !profile.is_active) {
     await supabase.auth.signOut()
     redirect('/login')
   }
-
-  const [unread, pending] = await Promise.all([
-    supabase.from('notifications').select('id', { count: 'exact', head: true }).is('read_at', null),
-    supabase.from('sales').select('id', { count: 'exact', head: true }).eq('approval_status', 'pending'),
-  ])
 
   const links: NavLink[] = [
     { href: '/', label: 'Dashboard', icon: 'dashboard' },
@@ -49,7 +50,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     { href: '/sales', label: 'History', icon: 'history' },
     { href: '/reports', label: 'Reports', icon: 'reports' },
     { href: '/notifications', label: 'Alerts', icon: 'alerts', badge: unread.count ?? 0 },
-    ...(profile.role === 'admin' ? [{ href: '/settings', label: 'Settings', icon: 'settings' } as NavLink] : []),
+    ...(profile.role === 'admin'
+      ? [{ href: '/users', label: 'Users', icon: 'users' } as NavLink, { href: '/settings', label: 'Settings', icon: 'settings' } as NavLink]
+      : []),
   ]
 
   return (
@@ -59,7 +62,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Nav links={links} variant="side" />
         <form action={signOut} className="border-t border-white/10 p-4">
           <p className="truncate text-sm font-semibold">{profile.full_name}</p>
-          <p className="mb-3 text-xs capitalize text-white/60">{profile.role}</p>
+          <p className="text-xs capitalize text-white/60">{profile.role}</p>
+          <Link href="/account" className="mb-3 mt-1 inline-block text-xs text-white/70 underline hover:text-white">Change password</Link>
           <button className="flex w-full items-center gap-2 rounded-lg border border-white/25 px-3 py-2 text-sm text-white/90 hover:bg-white/10">
             <LogOut className="h-4 w-4" aria-hidden /> Sign out
           </button>
@@ -68,9 +72,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
       <header className="sticky top-0 z-20 flex items-center justify-between circuit border-b border-red-600/40 bg-ink-900 px-4 py-3 text-white md:hidden print:hidden">
         <Brand />
-        <form action={signOut}>
-          <button aria-label="Sign out" className="rounded-lg border border-white/25 p-2"><LogOut className="h-4 w-4" /></button>
-        </form>
+        <div className="flex gap-2">
+          <Link href="/account" aria-label="Change password" className="rounded-lg border border-white/25 p-2"><KeyRound className="h-4 w-4" /></Link>
+          <form action={signOut}>
+            <button aria-label="Sign out" className="rounded-lg border border-white/25 p-2"><LogOut className="h-4 w-4" /></button>
+          </form>
+        </div>
       </header>
 
       <main className="px-4 pb-28 pt-5 md:ml-60 md:px-10 md:pb-12 md:pt-8 print:m-0 print:p-0">

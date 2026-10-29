@@ -14,7 +14,8 @@ const CHIP: Record<string, string> = {
 
 export default async function Dashboard() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: claims } = await supabase.auth.getClaims()
+  const userId = claims?.claims?.sub as string
 
   const now = new Date()
   const day = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' })
@@ -23,7 +24,7 @@ export default async function Dashboard() {
   const longDate = now.toLocaleDateString('en-PH', { timeZone: 'Asia/Manila', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
 
   const [me, today, pending, products, recent] = await Promise.all([
-    supabase.from('profiles').select('full_name').eq('id', user!.id).single(),
+    supabase.from('profiles').select('full_name').eq('id', userId).single(),
     supabase.from('effective_sales').select('total_centavos').gte('created_at', `${day}T00:00:00+08:00`),
     supabase.from('sales').select('id', { count: 'exact', head: true }).eq('approval_status', 'pending'),
     supabase.from('products').select('id, name, stock_qty, low_stock_threshold').eq('is_active', true),

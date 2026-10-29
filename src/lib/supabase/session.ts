@@ -20,7 +20,9 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  // getClaims checks the signed token locally (no network round trip) and refreshes it when needed
+  const { data } = await supabase.auth.getClaims()
+  const user = data?.claims ?? null
   const onLogin = request.nextUrl.pathname.startsWith('/login')
 
   if (!user && !onLogin) {

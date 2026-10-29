@@ -2,11 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BarChart3, Bell, ClipboardCheck, History, LayoutDashboard, Package, Settings, ShoppingCart } from 'lucide-react'
+import { BarChart3, Bell, ClipboardCheck, History, LayoutDashboard, Package, Settings, ShoppingCart, Users } from 'lucide-react'
 
 const ICONS = {
   dashboard: LayoutDashboard, sale: ShoppingCart, approvals: ClipboardCheck, inventory: Package,
-  history: History, reports: BarChart3, alerts: Bell, settings: Settings,
+  history: History, reports: BarChart3, alerts: Bell, settings: Settings, users: Users,
 }
 export type NavLink = { href: string; label: string; icon: keyof typeof ICONS; badge?: number }
 
