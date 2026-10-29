@@ -64,7 +64,7 @@ export default async function InventoryPage({
                 </div></div>
                 <div className="text-right">
                   <p className="font-semibold text-gray-900">{peso(p.price_centavos)}</p>
-                  <p className={`text-sm font-medium ${low ? 'text-red-700' : 'text-green-800'}`}>
+                  <p className={`text-sm font-medium ${low ? 'text-red-700' : 'text-emerald-700'}`}>
                     {p.stock_qty} in stock{low ? ' · low' : ''}
                   </p>
                 </div>

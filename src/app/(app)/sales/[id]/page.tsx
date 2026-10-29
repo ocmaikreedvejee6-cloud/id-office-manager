@@ -27,6 +27,8 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
     .eq('id', id).maybeSingle()
   if (!s) notFound()
 
+  const { data: pendingEdit } = await supabase
+    .from('sale_change_requests').select('id').eq('sale_id', id).eq('status', 'pending').maybeSingle()
   const { data: me } = await supabase.from('profiles').select('role, permissions').eq('id', user!.id).single()
   const canVoid = me?.role === 'admin' || (me?.permissions as { void_sale?: boolean } | null)?.void_sale === true
 
@@ -71,6 +73,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
         </p>
 
         {s.notes && <p className="mt-3 text-sm italic text-gray-600">Notes: {s.notes}</p>}
+        {s.current_revision > 1 && <p className="mt-3 text-xs text-gray-600">Revised after approval (revision {s.current_revision}).</p>}
         {s.approval_status === 'approved' && <p className="mt-3 text-xs text-gray-600">Approved by {nameOf(s.approver)} on {manila(s.approved_at!)}</p>}
         {s.approval_status === 'rejected' && <p className="mt-3 text-sm text-red-700">Rejected: {s.review_note}</p>}
         {s.status === 'voided' && (
@@ -78,6 +81,14 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
         )}
         {s.approval_status === 'pending' && <p className="mt-3 text-sm text-amber-800">Waiting for approval. This is not final until approved.</p>}
       </article>
+
+      {s.approval_status === 'approved' && s.status === 'completed' && (
+        <div className="mx-auto mt-4 max-w-md print:hidden">
+          {pendingEdit
+            ? <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">An edit to this sale is waiting for approval.</p>
+            : <Link href={`/sales/${s.id}/edit`} className="inline-block rounded-lg border border-green-900 px-4 py-2 font-medium text-green-900">Request an edit</Link>}
+        </div>
+      )}
 
       {canVoid && s.approval_status === 'approved' && s.status === 'completed' && (
         <div className="mx-auto mt-4 max-w-md print:hidden"><VoidButton saleId={s.id} /></div>

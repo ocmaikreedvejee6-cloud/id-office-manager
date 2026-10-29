@@ -23,6 +23,16 @@ export default async function SettingsPage() {
         <ClassificationManager table="courses" title="Courses / departments" items={courses.data ?? []} />
         <ClassificationManager table="categories" title="Product types" items={categories.data ?? []} />
         <PaymentMethods methods={methods} />
+        <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm md:col-span-2">
+          <h2 className="mb-1 font-semibold text-gray-900">Backup</h2>
+          <p className="mb-3 text-sm text-gray-600">
+            Download one file with every product, sale, stock movement and audit entry. Do this every week and before big
+            changes, and keep the file somewhere safe, not only on the office computer.
+          </p>
+          <a href="/settings/backup" className="inline-block rounded-lg bg-green-900 px-5 py-2.5 font-semibold text-white">
+            Download full backup
+          </a>
+        </section>
       </div>
     </>
   )

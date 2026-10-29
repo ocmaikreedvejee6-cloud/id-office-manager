@@ -7,7 +7,7 @@ const peso = (c: number) =>
 
 const STATUS_STYLE: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-900',
-  approved: 'bg-green-100 text-green-900',
+  approved: 'bg-emerald-100 text-emerald-900',
   rejected: 'bg-gray-200 text-gray-800',
   voided: 'bg-red-100 text-red-800',
 }

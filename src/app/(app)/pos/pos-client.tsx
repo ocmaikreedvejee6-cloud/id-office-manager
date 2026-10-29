@@ -137,7 +137,7 @@ export default function PosClient({ products, methods }: { products: Product[]; 
         {!online && <p role="alert" className="mt-3 text-sm text-red-700">You are offline. Sales cannot be recorded until the connection returns.</p>}
         {error && <p role="alert" className="mt-3 text-sm text-red-700">{error}</p>}
         {receipt && (
-          <p role="status" className="mt-3 rounded-lg bg-green-50 p-3 text-sm text-green-900">
+          <p role="status" className="mt-3 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-900">
             Submitted as <b>{receipt}</b>. It is waiting for supervisor approval; stock is deducted once approved.
           </p>
         )}
